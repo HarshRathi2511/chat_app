@@ -13,11 +13,70 @@ class WelcomeScreen extends StatefulWidget {
   _WelcomeScreenState createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> {
+class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProviderStateMixin {
+  //SingleTickerProviderStateMixin->for a single animation
+  //_WelcomeScreenState is the ticker provider
+
+  AnimationController controller;
+  Animation animation;
+
+  Animation animateFlashImage ;
+
+
+  @override
+  void initState() {   
+    super.initState();
+
+    controller = AnimationController(
+      duration: Duration(seconds: 3),
+      vsync: this,  //object that gets created from the state class having the required mixin
+      upperBound: 1,
+    );
+    
+    animateFlashImage= CurvedAnimation(parent: controller, curve: Curves.easeIn); //see docs curve not linear
+    //curves only have upper bound of 1 
+
+    //The animation to which this animation applies a curve
+
+    animation=ColorTween(begin: Colors.blueGrey,end:Colors.white).animate(controller);
+
+
+    controller.forward(); //Starts running this animation forwards (towards the end).
+
+    // controller.reverse(from: 1.0); 
+
+    // animation.addStatusListener((status) { //we need status if we want to loop animations 
+    //   print(status); //AnimationStatus.completed =>of forward animation
+    //AnimationStatus.dismissed =>of reverse animation
+    //   if(status ==AnimationStatus.completed) {
+    //     controller.reverse(from:1.0);
+    //   }
+    //   else if (status==AnimationStatus.dismissed){
+    //     controller.forward();
+    //   }
+    // });
+
+    controller.addListener(() {
+      setState(() {
+        //rebuilds screen whenever controller changes 
+      });
+      
+        print(controller.value); //ranges from lower bound to upper bound over the span of duration 
+        print(animation.value);
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor:animation.value,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
@@ -31,7 +90,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   tag: 'logo',
                   child: Container(
                     child: Image.asset('images/logo.png'),
-                    height: 60.0,
+                    // height: 60.0,
+                    // height: controller.value, 
+                    height: animateFlashImage.value*100,
                   ),
                 ),
                 Text(
